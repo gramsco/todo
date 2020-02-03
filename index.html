@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="./style.css">
+    
+</head>
+<style>
+
+body{
+    background:black;
+    color:white;
+}
+
+#wrapper{
+    display:flex;
+    height:100vh;
+    width:100vw;
+    justify-content: center;
+    align-items: center;
+}
+
+#result{
+   
+    height:30vw;
+    width:30vw;
+    border:solid 1px white;
+    overflow:auto;
+}
+
+input {
+    text-align: center;
+    background:black;
+    color:white;
+}
+
+</style>
+<body>
+    <div id="db"></div>
+
+    <div id="wrapper">
+        <form id="new">
+            <div>
+                <input id="enter" placeholder="new"/>
+            </div>
+        </form>
+        <button id="eraseAll">Erase all</button>
+        
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io();
+
+        let form = document.getElementById("new")
+        form.onsubmit = send
+        let eraseAll = document.getElementById('eraseAll')
+        eraseAll.onclick = eraseall
+
+        function eraseall(){
+            if (confirm('erase all?')) socket.emit('erase all')
+        }
+
+        function send(e){
+            e.preventDefault()            
+            socket.emit("new", enter.value)
+            enter.value = ""
+        }
+
+        function erase(e){
+            console.log(e)
+            socket.emit("erase", e.target.innerHTML)
+        }
+
+        function transform(data){
+            console.log(data)
+            db.innerHTML = ""
+            for (let i = 0 ; i < data.length ; i ++){
+                let newDiv = document.createElement('div')
+                newDiv.addEventListener('click', erase)
+                newDiv.innerHTML = data[i]
+                db.append(newDiv)
+            }
+        }
+
+        socket.on('db', data => transform(data.todo))
+
+    </script>
+</body>
+</html>
