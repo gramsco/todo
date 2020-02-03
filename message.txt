@@ -1,1 +1,0 @@
-name1 : salutname2 : salutname1 : testname1 : testname2 : hello1 : test
