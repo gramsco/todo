@@ -3,10 +3,13 @@ var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 const fs = require('fs')
 const db = require('./db.json')
+const path = require('path')
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
+
+let pathDB = path.join(__dirname,"db.json")
 
 io.on('connection', function(socket){
 
@@ -15,7 +18,7 @@ io.on('connection', function(socket){
 
     let todo = [...db.todo, new_todo]
     let newDb = {todo}
-    fs.writeFileSync('./db.json', JSON.stringify(newDb, null, 2))
+    fs.writeFileSync(pathDB, JSON.stringify(newDb, null, 2))
     io.emit("db", db)
 
   })
@@ -24,7 +27,7 @@ io.on('connection', function(socket){
 
         let todo = db.todo.filter(e => e != value)
         let newDb = {todo}
-        fs.writeFileSync('./db.json', JSON.stringify(newDb, null, 2))
+        fs.writeFileSync(pathDB, JSON.stringify(newDb, null, 2))
         io.emit("db", db)
 
   })
@@ -33,7 +36,7 @@ io.on('connection', function(socket){
 
       let todo = []
       let newDb = { todo }
-      fs.writeFileSync('./db.json', JSON.stringify(newDb, null, 2))
+      fs.writeFileSync(pathDB, JSON.stringify(newDb, null, 2))
       io.emit("db", db)
 
   })
