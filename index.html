@@ -30,12 +30,14 @@ body{
 
 ol{
     overflow: auto;
-    width:80%
+    width:80%;
+    height:100%;
 }
 
 ul{
     overflow:auto;
     width:100%;
+    height:100%;
 }
 
 #wrapper{
@@ -56,12 +58,17 @@ ul{
     display:flex;
     flex-direction: column;
     margin:0 auto;
+    height:200px;
+    overflow:auto;
+    border:solid 1px;
 }
 
 #todoo{
     border:solid 1px white;
-    height:50vh;
+    height:300px;
 }
+
+
 
 ol > li{
     cursor:pointer;
@@ -85,7 +92,7 @@ h1{
 
 #dockerContainer{
     border:solid 2px white;
-    height:50vh;
+    height:300px;
     width:100vw;
 }
 
@@ -93,6 +100,8 @@ h1{
     display:flex;
     justify-content: space-around;
     width:80vw;
+    height:100%;
+    overflow:auto;
 }
 
 </style>
@@ -116,8 +125,7 @@ h1{
         </div>
     </div>
 
-    <div id="dockerContainer">
-        
+    <div id="dockerContainer"> 
         <h1>
             <i class="fab fa-docker"></i>
             <span>Docker infos</span>
