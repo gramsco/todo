@@ -5,7 +5,6 @@ exec('git pull origin master && git add . && git commit -m "test" && git push or
     if (err){
         return
     }
-
     console.log(stdout)
 
 })
