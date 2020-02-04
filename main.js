@@ -4,6 +4,8 @@ var io = require('socket.io')(http);
 const fs = require('fs')
 const db = require('./db.json')
 const path = require('path')
+const {exec} = require('child_process')
+
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
@@ -11,9 +13,27 @@ app.get('/', function(req, res){
 
 let pathDB = path.join(__dirname,"db.json")
 
+
 io.on('connection', function(socket){
 
   io.emit("db", db)
+  exec("docker info", (err,stdout,stderr) => {
+    if (err){
+        console.log("an error occured")
+        return;
+    }
+
+    let arr = stdout.split('\n')
+    let containers = arr[4]
+    let running = arr[5]
+    let paused = arr[6]
+    let stopped = arr[7]
+    let images = arr[8]
+
+    io.emit('docker', {containers,running,paused,stopped,images})
+    
+  })
+  
   socket.on('new', (new_todo) => {
 
     let todo = [...db.todo, new_todo]
@@ -29,7 +49,6 @@ io.on('connection', function(socket){
         let newDb = {todo}
         fs.writeFileSync(pathDB, JSON.stringify(newDb, null, 2))
         io.emit("db", db)
-
   })
 
   socket.on('erase all', () => {
