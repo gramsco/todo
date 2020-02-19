@@ -43,6 +43,18 @@ io.on('connection', function(socket){
     console.log(result.split('\n'))
     io.emit("command_response", result.split('\n'))
   })
+
+  exec(`cd ../../repl && ls`, (err, stdout, stderr) => {
+
+
+    if (err){
+      io.emit('repl', "an error occured")
+    }
+    let result = stdout
+    console.log(result)
+    io.emit('repl', result.split('\n'))
+
+  })
   
   socket.on('new', (new_todo) => {
 
@@ -50,6 +62,27 @@ io.on('connection', function(socket){
     let newDb = {todo}
     fs.writeFileSync(pathDB, JSON.stringify(newDb, null, 2))
     io.emit("db", db)
+
+  })
+
+  socket.on('console-message', input => {
+
+    console.log(input)
+
+     
+     exec(input, {cwd: "../../"}, (err, stdout, stderr) => {
+
+        console.log(stdout)
+        let to_emit = ""
+
+        if (err){
+          to_emit = JSON.stringify(err)
+        }
+        else {
+          to_emit = stdout
+        }
+        socket.emit('console-response', to_emit)
+     })
 
   })
 
@@ -70,6 +103,19 @@ io.on('connection', function(socket){
       io.emit("db", db)
 
   })
+
+  socket.on('replFolder', (folder) => {
+
+    exec(`cd ../../repl/${folder} && code .`, (err, stdout, stdin) => {
+      if (err) {
+        console.log(err)
+        return 
+      }
+      else {
+        console.log('success')
+      }
+    })
+  })  
 
   socket.on('folder', (folder) => {
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>todo</title>
+    <title>Dashboard</title>
     <link rel="stylesheet" href="./style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css?family=Quicksand&display=swap" rel="stylesheet">
@@ -109,6 +109,37 @@ h1{
     overflow:auto;
 }
 
+.simple-flex{
+    display:flex;
+    justify-content: space-evenly;
+    align-items: flex-start;
+    height:300;
+}
+
+.simple-flex  > div{
+    height:100%;
+    overflow:auto;
+}
+
+#console{
+    height:20vh;
+    background:#21243d;
+    color:#88e1f2;
+    resize:none;
+    width:30vw;
+    margin:0 auto;
+}
+
+#smoll-result{
+    height:40vh;
+    overflow:auto;
+    margin:2%
+}
+
+::-webkit-scrollbar{
+    display:none;
+}
+
 </style>
 <body>
     <div id="todoo">
@@ -144,23 +175,87 @@ h1{
         </ul>
     </div>
 
-    <div>
-       
-        <h1>
-            <i class="fas fa-terminal"></i>
-            <span>Projects folder (<span id="projectLength"></span>)</span>
-        </h1>
+    <div class="simple-flex">
+       <div>
+            <h1>
+                <i class="fas fa-terminal"></i>
+                <span>Projects folder (<span id="projectLength"></span>)</span>
+            </h1>
+            <div>
+                <ul id="response"></ul>
+            </div>
+        </div>
         <div>
-            <ul id="response"></ul>
+            <h1>
+                <i class="fas fa-terminal"></i>
+                <span>Repl Folder (<span id="rplLength"></span>)</span>
+            </h1>
+            <div>
+                <ul id="response_rpl"></ul>
+            </div>
+        </div>
+    </div>
+    <div class="simple-flex">
+        <div>
+            <h1>smoll result</h1>
+            <div id="smoll-result"></div>
+        </div>
+        <div>
+            <h1>smoll consol</h1>
+            <input id="console"></input>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+
+        
+
+
         var socket = io();
         let dockerContainer = document.getElementById('dockerContainer')
         let nnew = document.getElementById("new")
         nnew.addEventListener('submit', send)
+
+        let cons = document.getElementById('console')
+        cons.addEventListener('keydown', sendAsConsole)
+
+        let smoll = document.getElementById('smoll-result')
+
+        let history = []
+
+        let n = 0
+
+
+        function sendAsConsole(e){
+            
+            if (e.code === "Enter"){
+                if (e.target.value.toLowerCase() == "clear" ){
+                    smoll.innerText = ""
+                    cons.value = ""
+                    return
+                }
+                socket.emit('console-message', e.target.value)
+                history.push(e.target.value)
+                cons.value = ""
+            }
+            
+            else if (e.code === "ArrowUp"){
+
+                
+                n++
+                let last = history.length -1 - n
+                cons.value = history[last]
+
+            }
+        
+            return 
+        }
+
+        socket.on('console-response', response => {
+
+            smoll.innerText = response
+        })
 
         let eraseAll = document.getElementById('eraseAll')
         eraseAll.onclick = eraseall
@@ -192,10 +287,26 @@ h1{
             }
         }
 
+        socket.on('repl', response => {
+            let container = document.getElementById('response_rpl')
+            container.innerHTML = ""
+            let length = document.getElementById('rplLength')
+            response = response.filter(e => e !== "")
+            length.innerHTML = response.length;
+            for (let i = 0 ; i < response.length ; i++){
+                let li = document.createElement('li')
+                li.innerHTML = response[i]
+                li.addEventListener('click', sendRepl)
+                container.appendChild(li)
+            }
+        })
+
         socket.on('command_response', response => {
             let container = document.getElementById('response')
             console.log(container)
+            container.innerHTML = ""
             let length = document.getElementById('projectLength')
+            response = response.filter(e => e !== "")
             length.innerHTML = response.length;
             for (let i = 0 ; i < response.length ; i++){
                 let li = document.createElement('li')
@@ -204,6 +315,11 @@ h1{
                 container.appendChild(li)
             }
         })
+
+        function sendRepl(e){
+            let txt = e.target.innerText
+            socket.emit('replFolder', txt)
+        }
 
         function sendFolder(e){
             let txt = e.target.innerText
@@ -215,8 +331,6 @@ h1{
             
             for (let obj in docker){
                 let div = document.getElementById(obj)
-                console.log(obj)
-                console.log(docker[obj])
                 div.innerHTML = docker[obj]
             }
             
